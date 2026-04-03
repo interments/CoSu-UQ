@@ -21,16 +21,17 @@
 
 ## Stage 3: Support Signal (LUQPair)
 - Script: `src/pipeline/stage3_compute_support.py`
-- Typical method: `--luq_method LUQPair --split_method step_answer`
-- Main output: `results/{run_setting}/LUQPair_step_answer_splited_results.json`
+- Main outputs:
+  - `results/{run_setting}/support_uncertainty_luqpair_{split_method}.json`
+  - `results/{run_setting}/support_uncertainty_luq_{split_method}.json`
 
 ## Stage 4: Confidence Signal (Keyword Token Probs)
 - Script: `src/pipeline/stage4_extract_confidence.py`
 - Inputs:
-  - `results/{run_setting}/LUQPair_step_answer_splited_results.json`
+  - `results/{run_setting}/support_uncertainty_luqpair_{split_method}.json`
   - `results/{run_setting}/generations.pkl`
   - `results/{run_setting}/semantic_clusters.pkl`
-- Main output: `results/{run_setting}/LUQPair_keywords_probs.json`
+- Main output: `results/{run_setting}/confidence_keywords_probs.json`
 
 ## Stage 5a: Judge Labels Backfill
 - Script: `src/eval/judge_responses.py`
@@ -50,12 +51,13 @@
   - `src/baselines/cache_token_importance.py`
   - `src/baselines/build_baseline_scores.py`
 - Main outputs:
-  - `predictive_entropy_from_generations_scores.pkl`
-  - `len_normed_predictive_entropy_from_generations_scores.pkl`
-  - `semantic_entropy_from_generations_scores.pkl`
-  - `sentence_sar_from_generations_scores.pkl`
-  - `token_sar_from_generations_scores.pkl`
+  - `predictive_entropy_scores.pkl`
+  - `len_normed_predictive_entropy_scores.pkl`
+  - `semantic_entropy_scores.pkl`
+  - `sentence_sar_scores.pkl`
+  - `token_sar_scores.pkl`
   - `luq_scores.pkl`
+  - `cotuq_scores.pkl` (produced by stage `6c`)
 
 ## Stage 7: Final CoSu-UQ + Baseline AUROC Compare
 - Script: `src/eval/final_compare.py`

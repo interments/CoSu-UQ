@@ -46,7 +46,7 @@ Supported stage IDs:
 - `6s`: Cache sentence similarity for SAR (`baselines.cache_sentence_similarity`)
 - `6t`: Cache token importance for Token-SAR (`baselines.cache_token_importance`)
 - `6b`: Build baseline score PKLs (`baselines.build_baseline_scores`)
-- `6c`: Build CoT-UQ baseline scores (`pipeline.Keywords_extraction_and_scoring` + `pipeline.Aggregated_probs`)
+- `6c`: Build CoT-UQ baseline scores (`baselines.cotuq_keyword_extraction` + `baselines.cotuq_aggregate_scores`)
 - `7`: Final AUROC comparison (`eval.final_compare`)
 
 Implementation notes:
@@ -54,6 +54,7 @@ Implementation notes:
 - Converts boolean-like env values using `str_to_bool`.
 - For stage `1`, if `USE_API=true`, it forwards API args to generation.
 - For stage `5j`, if `JUDGERS` is non-empty, it forwards custom judger configs.
+- For stage `3`, it runs support scoring twice (`LUQPair` then `LUQ`) to produce both CoSu-UQ support and LUQ baseline inputs.
 
 ---
 

@@ -87,17 +87,20 @@ case "${STAGE}" in
       --nli_model "${NLI_MODEL}"
     ;;
   3)
-    cmd=("${PYTHON_BIN}" -m pipeline.stage3_compute_support
+    base_cmd=("${PYTHON_BIN}" -m pipeline.stage3_compute_support
       --device "${DEVICE}"
       --model_name "${NLI_MODEL}"
       --run_setting "${RUN_SETTING}"
-      --luq_method "${LUQ_METHOD}"
       --split_method "${SPLIT_METHOD}")
 
     if [[ "$(str_to_bool "${SAVE_MATRIX}")" == "true" ]]; then
-      cmd+=(--save_matrix)
+      base_cmd+=(--save_matrix)
     fi
 
+    cmd=("${base_cmd[@]}" --luq_method "LUQPair")
+    "${cmd[@]}"
+
+    cmd=("${base_cmd[@]}" --luq_method "LUQ")
     "${cmd[@]}"
     ;;
   4)
@@ -152,11 +155,10 @@ case "${STAGE}" in
       --token_impt_meas_model "${TOKEN_IMPT_MODEL}" \
       --num_generation "${NUM_GENERATION_FOR_BASELINE}" \
       --temperature "${SAR_TEMPERATURE}" \
-      --luq_split_method "${SPLIT_METHOD}" \
-      --luq_json_prefix "${LUQ_JSON_PREFIX}"
+      --luq_split_method "${SPLIT_METHOD}"
     ;;
   6c)
-    kw_cmd=("${PYTHON_BIN}" -m pipeline.Keywords_extraction_and_scoring
+    kw_cmd=("${PYTHON_BIN}" -m baselines.cotuq_keyword_extraction
       --device "${DEVICE}"
       --model_dir "${TOKENIZER_MODEL_DIR}"
       --prompt_type "${COTUQ_PROMPT_TYPE}"
@@ -166,7 +168,7 @@ case "${STAGE}" in
     fi
     "${kw_cmd[@]}"
 
-    agg_cmd=("${PYTHON_BIN}" -m pipeline.Aggregated_probs
+    agg_cmd=("${PYTHON_BIN}" -m baselines.cotuq_aggregate_scores
       --device "${DEVICE}"
       --model_dir "${TOKENIZER_MODEL_DIR}"
       --measure_model "${TOKEN_IMPT_MODEL}"
@@ -181,6 +183,7 @@ case "${STAGE}" in
   7)
     cmd=("${PYTHON_BIN}" -m eval.final_compare
       --results-root "${RESULTS_DIR}"
+      --split_method "${SPLIT_METHOD}"
       --max-workers "${MAX_WORKERS}"
       --output-csv "${OUTPUT_CSV}")
 

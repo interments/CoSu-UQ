@@ -37,7 +37,7 @@ if __name__ == "__main__":
     torch.manual_seed(seed_value)
     logging.basicConfig(
         level=logging.INFO,
-        format="%(asctime)s %(levelname)s %(filename)s:%(lineno)d %(message)s"
+        format="%(asctime)s | %(levelname)s | %(name)s:%(lineno)d | %(message)s"
     )
 
     logger = logging.getLogger(__name__)

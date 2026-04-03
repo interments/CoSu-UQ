@@ -12,7 +12,7 @@ from sentence_transformers.cross_encoder import CrossEncoder
 from transformers import AutoTokenizer
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(filename)s:%(lineno)d %(message)s"
+    format="%(asctime)s | %(levelname)s | %(name)s:%(lineno)d | %(message)s"
 )
 
 logger = logging.getLogger(__name__)

@@ -24,8 +24,21 @@ def _maybe_load_pickle(path):
         return pickle.load(f)
 
 
+def _load_pickle_with_fallback(base_path, file_candidates, required=True):
+    for file_name in file_candidates:
+        data = _maybe_load_pickle(os.path.join(base_path, file_name))
+        if data is not None:
+            return data, file_name
+    if required:
+        raise FileNotFoundError(
+            f"None of the required files exist under {base_path}: {file_candidates}"
+        )
+    return None, None
+
+
 def _load_cotuq_scores(base_path):
     candidates = [
+        "cotuq_scores.pkl",
         "Cot_uq_token_sar_scores_src_sampled.pkl",
         "Cot_uq_probas_mean_scores_src_sampled.pkl",
         "Cot_uq_probas_min_scores_src_sampled.pkl",
@@ -38,6 +51,17 @@ def _load_cotuq_scores(base_path):
         data = _maybe_load_pickle(path)
         if data is not None:
             return data, name
+    return None, None
+
+
+def _resolve_json_input(base_path, candidates, required=True):
+    for file_name in candidates:
+        path = os.path.join(base_path, file_name)
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                return json.load(f), file_name
+    if required:
+        raise FileNotFoundError(f"None of the required files exist under {base_path}: {candidates}")
     return None, None
 
 
@@ -138,31 +162,53 @@ def aggregate_uncertainties(
     return result
 
 
-def process_run_setting(run_setting, results_root):
+def process_run_setting(run_setting, results_root, split_method):
     base_path = os.path.join(results_root, run_setting)
-    with open(os.path.join(base_path, "LUQPair_keywords_probs.json"), "r") as f:
-        luq_pair_keywords_probs = json.load(f)
+    confidence_keywords_probs, keyword_file = _resolve_json_input(
+        base_path,
+        ["confidence_keywords_probs.json"],
+    )
     with open(os.path.join(base_path, "generations.pkl"), "rb") as f:
         generations = pickle.load(f)
-    with open(os.path.join(base_path, "LUQPair_step_answer_splited_results.json"), "r") as f:
-        luq_pair_step_answer_splited_results = json.load(f)
+    support_results, support_file = _resolve_json_input(
+        base_path,
+        [f"support_uncertainty_luqpair_{split_method}.json"],
+    )
     with open(os.path.join(base_path, "semantic_clusters.pkl"), "rb") as f:
         semantic_clusters = pickle.load(f)
     with open(os.path.join(base_path, "AUROC_labels.json"), "r") as infile:
         auroc_labels = json.load(infile)
+    print(f"[info] {run_setting} support file={support_file}, keyword file={keyword_file}")
 
-    with open(os.path.join(base_path, "luq_scores.pkl"), "rb") as f:
-        luq_scores = pickle.load(f)
-    with open(os.path.join(base_path, "predictive_entropy_from_generations_scores.pkl"), "rb") as f:
-        pe_scores = pickle.load(f)
-    with open(os.path.join(base_path, "len_normed_predictive_entropy_from_generations_scores.pkl"), "rb") as f:
-        lnpe_scores = pickle.load(f)
-    with open(os.path.join(base_path, "semantic_entropy_from_generations_scores.pkl"), "rb") as f:
-        se_scores = pickle.load(f)
-    with open(os.path.join(base_path, "sentence_sar_from_generations_scores.pkl"), "rb") as f:
-        sentence_sar_scores = pickle.load(f)
-    with open(os.path.join(base_path, "token_sar_from_generations_scores.pkl"), "rb") as f:
-        token_sar_scores = pickle.load(f)
+    luq_scores, _ = _load_pickle_with_fallback(base_path, ["luq_scores.pkl"])
+    pe_scores, pe_file = _load_pickle_with_fallback(
+        base_path,
+        ["predictive_entropy_scores.pkl", "predictive_entropy_from_generations_scores.pkl"],
+    )
+    lnpe_scores, lnpe_file = _load_pickle_with_fallback(
+        base_path,
+        [
+            "len_normed_predictive_entropy_scores.pkl",
+            "len_normed_predictive_entropy_from_generations_scores.pkl",
+        ],
+    )
+    se_scores, se_file = _load_pickle_with_fallback(
+        base_path,
+        ["semantic_entropy_scores.pkl", "semantic_entropy_from_generations_scores.pkl"],
+    )
+    sentence_sar_scores, sent_file = _load_pickle_with_fallback(
+        base_path,
+        ["sentence_sar_scores.pkl", "sentence_sar_from_generations_scores.pkl"],
+    )
+    token_sar_scores, tok_file = _load_pickle_with_fallback(
+        base_path,
+        ["token_sar_scores.pkl", "token_sar_from_generations_scores.pkl"],
+    )
+    print(
+        f"[info] {run_setting} baseline score files: "
+        f"PE={pe_file}, LNPE={lnpe_file}, SE={se_file}, "
+        f"sentence-SAR={sent_file}, token-SAR={tok_file}"
+    )
     cotuq_scores, cotuq_file = _load_cotuq_scores(base_path)
     if cotuq_file:
         print(f"[info] {run_setting} loaded cotuq from {cotuq_file}")
@@ -175,7 +221,7 @@ def process_run_setting(run_setting, results_root):
     uncertainty_agg_type2 = "semantic_cluster_entailment"
 
     result = []
-    for item in luq_pair_keywords_probs:
+    for item in confidence_keywords_probs:
         response_picked_tokens_list = []
         for response_data in item["responses_data"]:
             picked_tokens_probs = []
@@ -240,7 +286,7 @@ def process_run_setting(run_setting, results_root):
 
     confidence_information = torch.tensor(probs_matrices_agg_probs)
     support_information = torch.tensor(
-        [[1 - score for score in item["uncertainty_scores"]] for item in luq_pair_step_answer_splited_results]
+        [[1 - score for score in item["uncertainty_scores"]] for item in support_results]
     )
     ids = torch.tensor([gen["id"] for gen in generations])
     labels = np.array([item["most_cluster_label"] for item in auroc_labels])
@@ -277,9 +323,9 @@ def process_run_setting(run_setting, results_root):
     if cotuq_scores is not None:
         baseline_scores["cotuq"] = cotuq_scores
     co_su_uq_scores = {
-        "combined_scores_fyl": combined_scores,
-        "GU_scores_fyl": gu_scores,
-        "SU_scores_fyl": su_scores,
+        "combined_scores": combined_scores,
+        "GU_scores": gu_scores,
+        "SU_scores": su_scores,
     }
 
     metrics = {}
@@ -306,11 +352,11 @@ def process_run_setting(run_setting, results_root):
     return new_row
 
 
-def run_all(run_settings, results_root, max_workers=8):
+def run_all(run_settings, results_root, split_method="step_answer", max_workers=8):
     rows = []
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_run = {
-            executor.submit(process_run_setting, run_setting, results_root): run_setting
+            executor.submit(process_run_setting, run_setting, results_root, split_method): run_setting
             for run_setting in run_settings
         }
         for future in as_completed(future_to_run):
@@ -342,7 +388,7 @@ def run_all(run_settings, results_root, max_workers=8):
         for k in ["PE", "LN-PE", "sentence-sar", "token-sar", "SE", "LUQ", "CoT-UQ"]
         if method_col_map[k] in new_df.columns
     ]
-    extra_methods = ["combined_scores_fyl", "GU_scores_fyl", "SU_scores_fyl"]
+    extra_methods = ["combined_scores", "GU_scores", "SU_scores"]
     ordered_cols = base_cols + main_methods + [col for col in extra_methods if col in new_df.columns]
 
     model_order = [
@@ -381,6 +427,13 @@ def parse_args():
     )
     parser.add_argument("--max-workers", type=int, default=8)
     parser.add_argument(
+        "--split_method",
+        type=str,
+        default="step_answer",
+        choices=["step_answer", "spacy", "nltk"],
+        help="Split method used in stage3 support output filename.",
+    )
+    parser.add_argument(
         "--output-csv",
         type=str,
         default="./results/final_uq_baseline_compare.csv",
@@ -395,7 +448,12 @@ def main():
         with open(args.run_settings_json, "r") as f:
             run_settings = json.load(f)
 
-    df = run_all(run_settings, args.results_root, max_workers=args.max_workers)
+    df = run_all(
+        run_settings,
+        args.results_root,
+        split_method=args.split_method,
+        max_workers=args.max_workers,
+    )
     if df.empty:
         print("No run_setting was processed successfully.")
         return

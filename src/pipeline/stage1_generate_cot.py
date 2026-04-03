@@ -51,7 +51,7 @@ if not use_api and not model_dir:
     raise ValueError("When using local generation, --model_dir is required (or set COSU_UQ_MODEL_DIR).")
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(filename)s:%(lineno)d %(message)s"
+    format="%(asctime)s | %(levelname)s | %(name)s:%(lineno)d | %(message)s"
 )
 
 logger = logging.getLogger(__name__)

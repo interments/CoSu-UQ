@@ -201,8 +201,10 @@ def predictive_entropy_from_generations(cached_data, num_generation=None):
     return scores
 
 
-def luq_scores(output_dir, run_setting, split_method="step_answer", luq_json_prefix="LUQ"):
-    luq_path = os.path.join(output_dir, run_setting, f"{luq_json_prefix}_{split_method}_splited_results.json")
+def luq_scores(output_dir, run_setting, split_method="step_answer"):
+    luq_path = os.path.join(output_dir, run_setting, f"support_uncertainty_luq_{split_method}.json")
+    if not os.path.exists(luq_path):
+        raise FileNotFoundError(f"Required support score file not found: {luq_path}")
     total_scores = _safe_load_json(luq_path, required=True)
     scores = []
     for item in total_scores:
@@ -219,6 +221,11 @@ def _dump_scores(path, scores):
         pickle.dump(scores, f)
 
 
+def _dump_scores_multi(run_dir, file_names, scores):
+    for file_name in file_names:
+        _dump_scores(os.path.join(run_dir, file_name), scores)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Minimal baseline cache + score pipeline for CoSu-UQ.")
     parser.add_argument("--output_dir", type=str, required=True)
@@ -228,7 +235,6 @@ def main():
     parser.add_argument("--num_generation", type=int, default=5)
     parser.add_argument("--temperature", type=float, default=0.001)
     parser.add_argument("--luq_split_method", type=str, default="step_answer")
-    parser.add_argument("--luq_json_prefix", type=str, default="LUQ")
     args = parser.parse_args()
 
     cached = load_cached_minimal(
@@ -249,14 +255,36 @@ def main():
         output_dir=args.output_dir,
         run_setting=args.run_setting,
         split_method=args.luq_split_method,
-        luq_json_prefix=args.luq_json_prefix,
     )
 
-    _dump_scores(os.path.join(run_dir, "predictive_entropy_from_generations_scores.pkl"), pe)
-    _dump_scores(os.path.join(run_dir, "len_normed_predictive_entropy_from_generations_scores.pkl"), lnpe)
-    _dump_scores(os.path.join(run_dir, "semantic_entropy_from_generations_scores.pkl"), se)
-    _dump_scores(os.path.join(run_dir, "sentence_sar_from_generations_scores.pkl"), sent_sar)
-    _dump_scores(os.path.join(run_dir, "token_sar_from_generations_scores.pkl"), tok_sar)
+    _dump_scores_multi(
+        run_dir,
+        ["predictive_entropy_scores.pkl", "predictive_entropy_from_generations_scores.pkl"],
+        pe,
+    )
+    _dump_scores_multi(
+        run_dir,
+        [
+            "len_normed_predictive_entropy_scores.pkl",
+            "len_normed_predictive_entropy_from_generations_scores.pkl",
+        ],
+        lnpe,
+    )
+    _dump_scores_multi(
+        run_dir,
+        ["semantic_entropy_scores.pkl", "semantic_entropy_from_generations_scores.pkl"],
+        se,
+    )
+    _dump_scores_multi(
+        run_dir,
+        ["sentence_sar_scores.pkl", "sentence_sar_from_generations_scores.pkl"],
+        sent_sar,
+    )
+    _dump_scores_multi(
+        run_dir,
+        ["token_sar_scores.pkl", "token_sar_from_generations_scores.pkl"],
+        tok_sar,
+    )
     _dump_scores(os.path.join(run_dir, "luq_scores.pkl"), luq)
 
     print("Saved baseline score pkls to:", run_dir)

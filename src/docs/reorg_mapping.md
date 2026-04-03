@@ -8,9 +8,9 @@
 - `src/pipeline/Get_semantic_clusters_llama_merge.py` -> `src/pipeline/stage2_semantic_cluster.py`
   - Logic: semantic clustering with NLI; save `semantic_clusters.pkl`.
 - `src/pipeline/LUQ.py` -> `src/pipeline/stage3_compute_support.py`
-  - Logic: LUQ/LUQPair support uncertainty scoring; save `LUQ*_splited_results.json`.
+  - Logic: LUQ/LUQPair support uncertainty scoring; save method-specific files (`support_uncertainty_luqpair_{split_method}.json`, `support_uncertainty_luq_{split_method}.json`).
 - `src/pipeline/Get_LUQPair_keywords_probs.py` -> `src/pipeline/stage4_extract_confidence.py`
-  - Logic: extract keyword token probabilities for confidence signal; save `LUQPair_keywords_probs.json`.
+  - Logic: extract keyword token probabilities for confidence signal; save `confidence_keywords_probs.json`.
 
 ## Evaluation
 - `src/pipeline/Judge_results_all_Cot_UQ.py` -> `src/eval/judge_responses.py`
