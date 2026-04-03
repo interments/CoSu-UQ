@@ -1,0 +1,39 @@
+# CoSu-UQ minimal reproducible dependencies
+# Python >= 3.10 recommended
+
+# Core numerical / ML
+numpy==2.0.2
+torch==2.6.0
+transformers==4.56.0
+accelerate==1.7.0
+safetensors==0.5.3
+
+datasets==3.6.0
+evaluate==0.4.3
+
+# Metrics / baseline scoring
+scikit-learn==1.6.1
+pandas==2.2.3
+sentence-transformers==4.1.0
+
+# NLP preprocessing
+spacy==3.8.7
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl#sha256=1932429db727d4bff3deed6b34cfc05df17794f4a52eeb26cf8928f7c1a0fb85
+nltk==3.9.1
+
+# API clients (used by generation / judge / atomic fact path)
+openai==1.82.0
+dashscope==1.25.4
+
+# Utility
+tqdm==4.67.1
+regex==2024.11.6
+requests==2.32.3
+
+# Evaluate metric backends used in generation/evaluation
+bert-score==0.3.13
+rouge_score==0.1.2
+
+# Optional GPU acceleration (enable only when your environment supports it)
+# flash_attn==2.8.3
+# xformers==0.0.29.post2
