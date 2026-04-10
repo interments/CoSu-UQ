@@ -15,8 +15,8 @@ Paper manuscript in this project: [`../ijcnn_pap2843s1.pdf`](../ijcnn_pap2843s1.
 - Unified shell orchestration for single-stage, full pipeline, and batch execution.
 - Baseline suite: PE, LN-PE, SE, Sentence-SAR, Token-SAR, LUQ, CoT-UQ.
 - Reproducible CoSu-UQ signal decomposition:
-  - `GU_scores`
-  - `SU_scores`
+  - `confidence_level`
+  - `support_level`
   - `combined_scores`
 
 ## Repository Structure
@@ -147,7 +147,7 @@ Final table:
 
 `src/eval/final_compare.py` reports AUROC for:
 - Baselines: PE, LN-PE, Sentence-SAR, Token-SAR, SE, LUQ, CoT-UQ
-- CoSu-UQ: `GU_scores`, `SU_scores`, `combined_scores`
+- CoSu-UQ: `confidence_level`, `support_level`, `combined_scores`
 
 By default, labels use `most_cluster_label` from `AUROC_labels.json`.
 

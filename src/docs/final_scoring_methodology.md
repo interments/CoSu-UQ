@@ -4,8 +4,8 @@
 
 1. 读取已有中间结果（不是重跑前序 pipeline）。
 2. 计算 CoSu-UQ 的三种最终分数：
-   - GU_scores：基于关键词概率的置信度不确定性。
-   - SU_scores：基于语义支持度的支持不确定性。
+   - confidence_level：基于关键词概率的置信度不确定性。
+   - support_level：基于语义支持度的支持不确定性。
    - combined_scores：先融合置信度与支持度信息，再做语义簇级不确定性聚合。
 3. 与 baseline 不确定性分数进行 AUROC 对比。
 
@@ -40,8 +40,8 @@
    - 在簇内做对数和聚合并归一，得到样本级不确定性。
 
 4. 最终三类 CoSu-UQ 分数
-   - GU_scores：仅由 Confidence Information 聚合得到。
-   - SU_scores：仅由 Support Information 聚合得到。
+   - confidence_level：仅由 Confidence Information 聚合得到。
+   - support_level：仅由 Support Information 聚合得到。
    - combined_scores：先按 mean 融合两类信息，再做同样的语义簇聚合。
 
 5. 与 baseline 对比

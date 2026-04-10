@@ -298,8 +298,12 @@ def process_run_setting(run_setting, results_root, split_method):
         )
     }
 
-    gu_scores = aggregate_uncertainties(confidence_information, ids, semantic_clusters, uncertainty_agg_type)
-    su_scores = aggregate_uncertainties(support_information, ids, semantic_clusters, uncertainty_agg_type)
+    confidence_level_scores = aggregate_uncertainties(
+        confidence_information, ids, semantic_clusters, uncertainty_agg_type
+    )
+    support_level_scores = aggregate_uncertainties(
+        support_information, ids, semantic_clusters, uncertainty_agg_type
+    )
 
     combined_information = [
         aggregation_strategies[information_agg_type]([c, s])
@@ -324,8 +328,8 @@ def process_run_setting(run_setting, results_root, split_method):
         baseline_scores["cotuq"] = cotuq_scores
     co_su_uq_scores = {
         "combined_scores": combined_scores,
-        "GU_scores": gu_scores,
-        "SU_scores": su_scores,
+        "confidence_level": confidence_level_scores,
+        "support_level": support_level_scores,
     }
 
     metrics = {}
@@ -388,7 +392,7 @@ def run_all(run_settings, results_root, split_method="step_answer", max_workers=
         for k in ["PE", "LN-PE", "sentence-sar", "token-sar", "SE", "LUQ", "CoT-UQ"]
         if method_col_map[k] in new_df.columns
     ]
-    extra_methods = ["combined_scores", "GU_scores", "SU_scores"]
+    extra_methods = ["combined_scores", "confidence_level", "support_level"]
     ordered_cols = base_cols + main_methods + [col for col in extra_methods if col in new_df.columns]
 
     model_order = [

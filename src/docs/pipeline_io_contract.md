@@ -305,7 +305,7 @@ Outputs:
 Main output columns:
 - `model`, `dataset`
 - Baseline AUROC columns: PE, LN-PE, sentence-sar, token-sar, SE, LUQ, optional CoT-UQ
-- CoSu-UQ AUROC columns: `GU_scores`, `SU_scores`, `combined_scores`
+- CoSu-UQ AUROC columns: `confidence_level`, `support_level`, `combined_scores`
 
 ---
 

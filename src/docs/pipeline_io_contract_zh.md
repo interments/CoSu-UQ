@@ -305,7 +305,7 @@ Stage 6c 顺序运行两个脚本。
 主要输出列：
 - `model`, `dataset`
 - baseline 的 AUROC 列：PE、LN-PE、sentence-sar、token-sar、SE、LUQ、可选 CoT-UQ
-- CoSu-UQ AUROC 列：`GU_scores`, `SU_scores`, `combined_scores`
+- CoSu-UQ AUROC 列：`confidence_level`, `support_level`, `combined_scores`
 
 ---
 
