@@ -8,7 +8,6 @@ CoSu-UQ combines:
 
 These signals are fused and aggregated at the final-answer semantic cluster level for robust uncertainty estimation.
 
-Paper manuscript in this project: [`../ijcnn_pap2843s1.pdf`](../ijcnn_pap2843s1.pdf)
 
 ## Highlights
 - End-to-end pipeline from dataset build to AUROC comparison.
