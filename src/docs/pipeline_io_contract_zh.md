@@ -230,6 +230,7 @@
 - `predictive_entropy_scores.pkl`
 - `len_normed_predictive_entropy_scores.pkl`
 - `semantic_entropy_scores.pkl`
+- `self_consistency_scores.pkl`
 - `sentence_sar_scores.pkl`
 - `token_sar_scores.pkl`
 - `luq_scores.pkl`

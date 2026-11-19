@@ -11,7 +11,7 @@ if __name__ == "__main__":
     parser.add_argument("--device", type=str, default="2", help="CUDA device id")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument("--run_setting", type=str, default="", help="Run setting")
-    parser.add_argument("--nli_model", type=str, default="potsawee/deberta-v3-large-mnli", help="NLI model name or path")
+    parser.add_argument("--nli_model", type=str, default="microsoft/deberta-large-mnli", help="NLI model name or path")
     args = parser.parse_args()
 
     os.chdir(config.run_dir)

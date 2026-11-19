@@ -196,6 +196,11 @@ def process_run_setting(run_setting, results_root, split_method):
         base_path,
         ["semantic_entropy_scores.pkl", "semantic_entropy_from_generations_scores.pkl"],
     )
+    sc_scores, sc_file = _load_pickle_with_fallback(
+        base_path,
+        ["self_consistency_scores.pkl", "sc_scores.pkl"],
+        required=False,
+    )
     sentence_sar_scores, sent_file = _load_pickle_with_fallback(
         base_path,
         ["sentence_sar_scores.pkl", "sentence_sar_from_generations_scores.pkl"],
@@ -207,7 +212,7 @@ def process_run_setting(run_setting, results_root, split_method):
     print(
         f"[info] {run_setting} baseline score files: "
         f"PE={pe_file}, LNPE={lnpe_file}, SE={se_file}, "
-        f"sentence-SAR={sent_file}, token-SAR={tok_file}"
+        f"SC={sc_file}, sentence-SAR={sent_file}, token-SAR={tok_file}"
     )
     cotuq_scores, cotuq_file = _load_cotuq_scores(base_path)
     if cotuq_file:
@@ -324,6 +329,8 @@ def process_run_setting(run_setting, results_root, split_method):
         "semantic-entropy-from-generations": se_scores,
         "LUQ": luq_scores,
     }
+    if sc_scores is not None:
+        baseline_scores["SC"] = sc_scores
     if cotuq_scores is not None:
         baseline_scores["cotuq"] = cotuq_scores
     co_su_uq_scores = {
@@ -383,13 +390,14 @@ def run_all(run_settings, results_root, split_method="step_answer", max_workers=
         "sentence-sar": "sentence-sar-from-generations",
         "token-sar": "token-sar-from-generations",
         "SE": "semantic-entropy-from-generations",
+        "SC": "SC",
         "LUQ": "LUQ",
         "CoT-UQ": "cotuq",
     }
     base_cols = ["model", "dataset"]
     main_methods = [
         method_col_map[k]
-        for k in ["PE", "LN-PE", "sentence-sar", "token-sar", "SE", "LUQ", "CoT-UQ"]
+        for k in ["PE", "LN-PE", "sentence-sar", "token-sar", "SE", "SC", "LUQ", "CoT-UQ"]
         if method_col_map[k] in new_df.columns
     ]
     extra_methods = ["combined_scores", "confidence_level", "support_level"]
@@ -429,6 +437,12 @@ def parse_args():
         default="",
         help="Optional JSON file path containing a list[str] of run_setting values.",
     )
+    parser.add_argument(
+        "--run-setting",
+        action="append",
+        default=[],
+        help="A run_setting to evaluate. Repeat this argument for multiple runs.",
+    )
     parser.add_argument("--max-workers", type=int, default=8)
     parser.add_argument(
         "--split_method",
@@ -447,10 +461,12 @@ def parse_args():
 
 def main():
     args = parse_args()
-    run_settings = DEFAULT_RUN_SETTINGS
+    run_settings = list(args.run_setting) or DEFAULT_RUN_SETTINGS
     if args.run_settings_json:
         with open(args.run_settings_json, "r") as f:
             run_settings = json.load(f)
+            if args.run_setting:
+                run_settings = list(args.run_setting) + list(run_settings)
 
     df = run_all(
         run_settings,

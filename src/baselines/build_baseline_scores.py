@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import pickle
+from collections import Counter
 
 import torch
 
@@ -163,6 +164,29 @@ def semantic_entropy_from_generations(cached_data, num_generation=None):
     return scores
 
 
+def self_consistency_from_generations(cached_data, num_generation=None):
+    """Self-Consistency uncertainty: 1 - mass of the largest semantic cluster."""
+    generations = cached_data["generations"]
+    semantic_clusters = cached_data["semantic_clusters"]
+    scores = []
+
+    for sample in generations:
+        sample_id = sample["id"]
+        semantic_ids = semantic_clusters[sample_id].get("semantic_set_ids_entailment", [])
+        if num_generation is not None:
+            semantic_ids = semantic_ids[:num_generation]
+
+        if not semantic_ids:
+            scores.append(torch.tensor(float("nan")))
+            continue
+
+        counts = Counter(int(cluster_id) for cluster_id in semantic_ids)
+        largest_cluster_mass = max(counts.values()) / len(semantic_ids)
+        scores.append(torch.tensor(1.0 - largest_cluster_mass, dtype=torch.float32))
+
+    return scores
+
+
 def len_normed_predictive_entropy_from_generations(cached_data, num_generation=None):
     generations = cached_data["generations"]
     scores = []
@@ -249,6 +273,7 @@ def main():
     pe = predictive_entropy_from_generations(cached, num_generation=args.num_generation)
     lnpe = len_normed_predictive_entropy_from_generations(cached, num_generation=args.num_generation)
     se = semantic_entropy_from_generations(cached, num_generation=args.num_generation)
+    sc = self_consistency_from_generations(cached, num_generation=args.num_generation)
     sent_sar = sentence_sar_from_generations(cached, t=args.temperature, num_generation=args.num_generation)
     tok_sar = token_sar_from_generations(cached, num_generation=args.num_generation)
     luq = luq_scores(
@@ -274,6 +299,11 @@ def main():
         run_dir,
         ["semantic_entropy_scores.pkl", "semantic_entropy_from_generations_scores.pkl"],
         se,
+    )
+    _dump_scores_multi(
+        run_dir,
+        ["self_consistency_scores.pkl", "sc_scores.pkl"],
+        sc,
     )
     _dump_scores_multi(
         run_dir,

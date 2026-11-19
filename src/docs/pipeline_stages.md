@@ -33,12 +33,12 @@
   - `results/{run_setting}/semantic_clusters.pkl`
 - Main output: `results/{run_setting}/confidence_keywords_probs.json`
 
-## Stage 5a: Judge Labels Backfill
+## Stage 5j: Judge Labels Backfill
 - Script: `src/eval/judge_responses.py`
 - Input: `results/{run_setting}/generations.pkl`
 - Output: updates `final_judge_result_labels` in `generations.pkl`
 
-## Stage 5b: AUROC Label Build
+## Stage 5l: AUROC Label Build
 - Script: `src/eval/build_auroc_labels.py`
 - Inputs:
   - `results/{run_setting}/generations.pkl`
@@ -54,6 +54,7 @@
   - `predictive_entropy_scores.pkl`
   - `len_normed_predictive_entropy_scores.pkl`
   - `semantic_entropy_scores.pkl`
+  - `self_consistency_scores.pkl`
   - `sentence_sar_scores.pkl`
   - `token_sar_scores.pkl`
   - `luq_scores.pkl`

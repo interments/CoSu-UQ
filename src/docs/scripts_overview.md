@@ -55,6 +55,7 @@ Implementation notes:
 - For stage `1`, if `USE_API=true`, it forwards API args to generation.
 - For stage `5j`, if `JUDGERS` is non-empty, it forwards custom judger configs.
 - For stage `3`, it runs support scoring twice (`LUQPair` then `LUQ`) to produce both CoSu-UQ support and LUQ baseline inputs.
+- For stage `7`, it evaluates the current `RUN_SETTING` unless `RUN_SETTINGS_JSON` is set.
 
 ---
 
@@ -102,6 +103,7 @@ Input file format:
 How it works:
 - Iterates each run setting.
 - Launches `run_pipeline.sh` with `RUN_SETTING` overridden per line.
+- Use `DO_STAGE1=false` when the generations already exist and you only want to rebuild later stages.
 
 Example `run_settings.txt`:
 

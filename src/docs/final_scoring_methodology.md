@@ -1,6 +1,6 @@
 # CoSu-UQ 最终分数合成说明
 
-本目录中的 final_score_compare.py 是你给的 notebook 代码的脚本化整理版，功能是：
+`src/eval/final_compare.py` 是最终评分与对比脚本的脚本化整理版，功能是：
 
 1. 读取已有中间结果（不是重跑前序 pipeline）。
 2. 计算 CoSu-UQ 的三种最终分数：
@@ -20,6 +20,7 @@
 - predictive_entropy_scores.pkl
 - len_normed_predictive_entropy_scores.pkl
 - semantic_entropy_scores.pkl
+- self_consistency_scores.pkl
 - sentence_sar_scores.pkl
 - token_sar_scores.pkl
 - cotuq_scores.pkl（可选；当运行 stage 6c 后可用）
@@ -45,7 +46,8 @@
    - combined_scores：先按 mean 融合两类信息，再做同样的语义簇聚合。
 
 5. 与 baseline 对比
-   - baseline: PE, LN-PE, sentence-SAR, token-SAR, SE, LUQ
+   - baseline: PE, LN-PE, sentence-SAR, token-SAR, SE, SC, LUQ
+   - SC：1 - 最大语义簇的样本占比。
    - 指标: AUROC，标签使用 AUROC_labels.json 里的 most_cluster_label。
 
 ## 运行方式
@@ -53,10 +55,12 @@
 ```bash
 python src/eval/final_compare.py \
   --results-root ./results \
+  --run-setting "<run_setting>" \
   --output-csv ./results/final_uq_baseline_compare.csv
 ```
 
 可选参数：
 
+- --run-setting：可重复传入一个或多个 run_setting；不传时使用脚本内的默认列表。
 - --run-settings-json：传入一个 JSON 文件（list[str]）覆盖默认 run_settings。
 - --max-workers：并行处理线程数。

@@ -84,12 +84,12 @@ case "${STAGE}" in
       --device "${DEVICE}" \
       --seed "${SEED}" \
       --run_setting "${RUN_SETTING}" \
-      --nli_model "${NLI_MODEL}"
+      --nli_model "${NLI_MODEL_CLUSTER}"
     ;;
   3)
     base_cmd=("${PYTHON_BIN}" -m pipeline.stage3_compute_support
       --device "${DEVICE}"
-      --model_name "${NLI_MODEL}"
+      --model_name "${NLI_MODEL_SUPPORT}"
       --run_setting "${RUN_SETTING}"
       --split_method "${SPLIT_METHOD}")
 
@@ -189,6 +189,8 @@ case "${STAGE}" in
 
     if [[ -n "${RUN_SETTINGS_JSON}" ]]; then
       cmd+=(--run-settings-json "${RUN_SETTINGS_JSON}")
+    else
+      cmd+=(--run-setting "${RUN_SETTING}")
     fi
 
     "${cmd[@]}"
